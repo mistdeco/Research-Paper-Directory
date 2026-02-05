@@ -135,7 +135,6 @@
           <div class="formRow">
             <label for="query">Search</label>
             <input id="query" type="text" name="query" value="<?= chars($query) ?>" maxlength="120" placeholder="Title, author, or keyword">
-            <small class="meta"><span id="queryNum">0</span>/120</small>
           </div>
 
           <div class="formRow inline">
@@ -280,14 +279,5 @@
     </div>
   </div>
 
-  <script>
-    (function () {
-      var q = document.getElementById("query");
-      var c = document.getElementById("queryNum");
-      function upd() { c.textContent = String(q.value.length); }
-      q.addEventListener("input", upd);
-      upd();
-    })();
-  </script>
 </body>
 </html>
