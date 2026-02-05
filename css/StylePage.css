@@ -1,0 +1,138 @@
+@import url('https://fonts.googleapis.com/css2?family=IM+Fell+English&display=swap');
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+:root {
+  --nav-blue: #576a8f;
+  --glass-bg: rgba(255, 253, 241, 0.78);
+  --text-light: #fffdf1;
+}
+
+body {
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  background: #fffdf1;
+  min-height: 100vh;
+}
+
+.background {
+  background-image: url("../images/download.png");
+  background-size: contain;
+  background-repeat: repeat-x;
+  background-position: center top;
+  padding: 70px 0 100px;
+}
+
+.card {
+  width: 1100px;
+  margin: auto;
+}
+
+.pageHeader {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.pageHeader .title {
+  font-family: 'IM Fell English', serif;
+  font-size: 34px;
+  color: var(--text-light);
+}
+
+.detailCard {
+  background: var(--glass-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 26px;
+  padding: 42px;
+  box-shadow: 0 25px 45px rgba(0, 0, 0, 0.25);
+}
+
+.paperTitle {
+  font-family: 'IM Fell English', serif;
+  font-size: 28px;
+  margin-bottom: 12px;
+}
+
+.paperMeta {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 22px;
+}
+
+.lineBreak {
+  margin: 0 6px;
+}
+
+.detailLine {
+  margin-bottom: 18px;
+  font-size: 15px;
+}
+
+.detailLine strong {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.abstractText {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 18px;
+  border-radius: 14px;
+  line-height: 1.6;
+}
+
+.citationBox {
+  display: flex;
+  gap: 30px;
+  margin-top: 16px;
+}
+
+.field {
+  flex: 1;
+}
+
+.label {
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: #374151;
+}
+
+.input {
+  width: 100%;
+  resize: none;
+  border-radius: 14px;
+  border: none;
+  padding: 14px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.9);
+}
+
+.do {
+  margin-top: 14px;
+}
+
+.btn {
+  padding: 8px 20px;
+  border-radius: 40px;
+  border: 2px solid var(--nav-blue);
+  background: transparent;
+  color: var(--nav-blue);
+  text-decoration: none;
+  cursor: pointer;
+  font-family: 'IM Fell English', serif;
+}
+
+.btn-primary {
+  background: var(--nav-blue);
+  color: var(--text-light);
+  border: none;
+}
+
+.empty {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 20px;
+}

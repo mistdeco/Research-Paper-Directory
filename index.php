@@ -1,11 +1,11 @@
-<?php include "config.php"; ?>
+<?php include "includes/config.php"; ?>
 
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>Research Paper Directory</title>
-  <link rel="stylesheet" href="style.css?v=1">
+  <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
   <div class="navbar topNav">
@@ -13,7 +13,7 @@
       <span class="title">Research Paper Directory</span>
     </div>
     <div class="rightNav">
-      <a class="btn btn-admin" href="admin.php">Admin Login</a>
+      <a class="btn btn-admin" href="includes/admin.php">Admin Login</a>
     </div>
   </div>
 
@@ -178,9 +178,9 @@
             </div>
           </div>
 
-          <div class="formRow actions">
+          <div class="formRowActions">
             <button class="btn btn-primary" type="submit">Apply</button>
-            <a class="btn" href="index.php">Reset</a>
+            <a class="btn btn-reset" href="index.php">Reset</a>
           </div>
         </form>
       </section>
@@ -201,7 +201,7 @@
                 <li class="resItem">
                   <article class="result">
                     <h3 class="resHeading">
-                      <a class="resTitle" href="paperdetails.php?id=<?= (int)$row["id"] ?>">
+                      <a class="resTitle" href="includes/paperdetails.php?id=<?= (int)$row["id"] ?>">
                         <?= chars($row["title"]) ?>
                       </a>
                     </h3>
