@@ -29,13 +29,11 @@ if (count($authorItems) === 0) $authorItems = [""];
 
 if (isset($_POST['update'])) {
   $title = $_POST['title'];
-
   $authorsArr = isset($_POST['authors']) ? $_POST['authors'] : [];
   if (!is_array($authorsArr)) $authorsArr = [];
   $authorsArr = array_map('trim', $authorsArr);
   $authorsArr = array_values(array_filter($authorsArr, function($v){ return $v !== ""; }));
   $authors = implode(", ", $authorsArr);
-
   $keywords = $_POST['keywords'];
   $department = $_POST['departmentItem'];
   $year_published = $_POST['year_published'];
@@ -72,37 +70,32 @@ if (isset($_POST['update'])) {
       </header>
 
       <section class="formCard">
-        <form class="form" method="POST">
+        <form id="editForm" class="form" method="POST">
           <div class="field">
             <div class="label">Title</div>
-            <input class="input" type="text" name="title" value="<?php echo $row['title']; ?>">
+            <input class="input" type="text" name="title" value="<?php echo htmlspecialchars($row['title']); ?>" required>
           </div>
 
           <div class="field">
             <div class="label">Authors</div>
-
             <div id="authorsWrap">
               <?php for ($n = 0; $n < count($authorItems); $n++) { ?>
-                <?php if ($n === 0) { ?>
-                  <div class="authorRow">
-                    <input class="input" type="text" name="authors[]" value="<?php echo htmlspecialchars($authorItems[$n], ENT_QUOTES, 'UTF-8'); ?>">
+                <div class="authorRow">
+                  <input class="input" type="text" name="authors[]" value="<?php echo htmlspecialchars($authorItems[$n]); ?>">
+                  <?php if ($n === 0) { ?>
                     <button class="btn" type="button" id="addAuthor">+</button>
-                  </div>
-                <?php } else { ?>
-                  <div class="authorRow">
-                    <input class="input" type="text" name="authors[]" value="<?php echo htmlspecialchars($authorItems[$n], ENT_QUOTES, 'UTF-8'); ?>">
+                  <?php } else { ?>
                     <button class="btn" type="button" onclick="this.parentNode.parentNode.removeChild(this.parentNode)">-</button>
-                  </div>
-                <?php } ?>
+                  <?php } ?>
+                </div>
               <?php } ?>
             </div>
-
             <small class="meta">Use + to add more authors.</small>
           </div>
 
           <div class="field">
             <div class="label">Keywords</div>
-            <input class="input" type="text" name="keywords" value="<?php echo $row['keywords']; ?>">
+            <input class="input" type="text" name="keywords" value="<?php echo htmlspecialchars($row['keywords']); ?>">
           </div>
 
           <div class="field">
@@ -110,8 +103,8 @@ if (isset($_POST['update'])) {
             <select class="input" name="departmentItem" required>
               <?php foreach ($departmentList as $value => $label) { ?>
                 <?php if ($value !== "") { ?>
-                  <option value="<?php echo htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>" <?php echo ($row['department'] === $value ? "selected" : ""); ?>>
-                    <?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?>
+                  <option value="<?php echo htmlspecialchars($value); ?>" <?php echo ($row['department'] === $value ? "selected" : ""); ?>>
+                    <?php echo htmlspecialchars($label); ?>
                   </option>
                 <?php } ?>
               <?php } ?>
@@ -120,24 +113,22 @@ if (isset($_POST['update'])) {
 
           <div class="field">
             <div class="label">Publication Year</div>
-            <input class="input" type="text" name="year_published" value="<?php echo $row['year_published']; ?>">
+            <input class="input" type="text" name="year_published" value="<?php echo htmlspecialchars($row['year_published']); ?>">
           </div>
 
           <div class="field">
             <div class="label">Abstract</div>
-            <textarea class="input" name="abstract" rows="6"><?php echo $row['abstract']; ?></textarea>
+            <textarea class="input" name="abstract" rows="6"><?php echo htmlspecialchars($row['abstract']); ?></textarea>
           </div>
 
           <div class="do">
             <button class="btn btn-primary" type="submit" name="update">Update</button>
-            <a class="btn" href="adminindex.php">Back</a>
+            <a id="backBtn" class="btn" href="adminindex.php">Back</a>
           </div>
         </form>
       </section>
-
     </div>
   </div>
-
-  <script src="../js/script.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>
