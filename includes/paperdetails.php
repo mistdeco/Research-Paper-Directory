@@ -90,7 +90,7 @@ if ($row) {
         <?php if (!$row) { ?>
           <div class="empty">Paper not found.</div>
           <div class="do">
-            <a class="btn" href="/index.php">Back</a>
+            <a class="btn" href="/Research-Paper-Directory-main/index.php">Back</a>
           </div>
         <?php } else { ?>
           <article class="paperDetails">
@@ -146,7 +146,7 @@ if ($row) {
             </div>
 
             <div class="do">
-              <a class="btn" href="/index.php">Back</a>
+              <a class="btn" href="/Research-Paper-Directory-main/index.php">Back</a>
             </div>
           </article>
         <?php } ?>
@@ -155,22 +155,6 @@ if ($row) {
     </div>
   </div>
 
-  <script>
-    (function () {
-      function copyFrom(id) {
-        var el = document.getElementById(id);
-        if (!el) return;
-        el.focus();
-        el.select();
-        try { document.execCommand("copy"); } catch (e) {}
-      }
-
-      var a = document.getElementById("copyApa");
-      var m = document.getElementById("copyMla");
-
-      if (a) a.addEventListener("click", function () { copyFrom("apaText"); });
-      if (m) m.addEventListener("click", function () { copyFrom("mlaText"); });
-    })();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
