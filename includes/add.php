@@ -62,17 +62,16 @@ if (isset($_POST['save'])) {
           </div>
 
           <div class="field">
-            <div class="label">Authors</div>
-
-            <div id="authorsWrap">
-              <div class="authorRow">
-                <input class="input" type="text" name="authors[]" required>
-                <button class="btn" type="button" id="addAuthor">+</button>
-              </div>
-            </div>
-
-            <small class="meta">Use + to add more authors.</small>
+            <div class="label">Number of Authors</div>
+            <input class="input" type="number" id="authorCount" min="1" max="20" placeholder="e.g. 3" required>
           </div>
+
+          <div class="field">
+            <div class="label">Authors</div>
+            <div id="authorsWrap"></div>
+            <small class="meta">Author fields will appear based on the number entered.</small>
+          </div>
+
 
           <div class="field">
             <div class="label">Keywords</div>
