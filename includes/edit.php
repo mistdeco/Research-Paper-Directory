@@ -76,21 +76,15 @@ if (isset($_POST['update'])) {
             <input class="input" type="text" name="title" value="<?php echo htmlspecialchars($row['title']); ?>" required>
           </div>
 
+             <div class="field">
+            <div class="label">Number of Authors</div>
+            <input class="input" type="number" id="authorCount" min="1" max="20" placeholder="e.g. 3" required>
+          </div>
+
           <div class="field">
             <div class="label">Authors</div>
-            <div id="authorsWrap">
-              <?php for ($n = 0; $n < count($authorItems); $n++) { ?>
-                <div class="authorRow">
-                  <input class="input" type="text" name="authors[]" value="<?php echo htmlspecialchars($authorItems[$n]); ?>">
-                  <?php if ($n === 0) { ?>
-                    <button class="btn" type="button" id="addAuthor">+</button>
-                  <?php } else { ?>
-                    <button class="btn" type="button" onclick="this.parentNode.parentNode.removeChild(this.parentNode)">-</button>
-                  <?php } ?>
-                </div>
-              <?php } ?>
-            </div>
-            <small class="meta">Use + to add more authors.</small>
+            <div id="authorsWrap"></div>
+            <small class="meta">Author fields will appear based on the number entered.</small>
           </div>
 
           <div class="field">
