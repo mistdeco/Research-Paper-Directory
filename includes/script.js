@@ -43,13 +43,30 @@
    FUNCTION: Citation Clipboard
    ============================================================ */
 (function () {
-  function copyFrom(id) {
+  function copyFrom(id, buttonEl) {
     var el = document.getElementById(id);
     if (!el) return;
-    el.focus();
+
+    // Select the text
     el.select();
-    try { 
-      document.execCommand("copy"); 
+    el.setSelectionRange(0, 99999); // For mobile devices
+
+    try {
+      document.execCommand("copy");
+      
+      // Save the original text (e.g., "Copy APA")
+      var originalText = buttonEl.textContent;
+      
+      // Change button state
+      buttonEl.textContent = "Copied!";
+      buttonEl.classList.add("copied-success");
+      
+      // Revert back after 2 seconds
+      setTimeout(function() {
+        buttonEl.textContent = originalText;
+        buttonEl.classList.remove("copied-success");
+      }, 2000);
+
     } catch (e) {
       console.error("Copying failed", e);
     }
@@ -58,10 +75,18 @@
   var a = document.getElementById("copyApa");
   var m = document.getElementById("copyMla");
 
-  if (a) a.addEventListener("click", function () { copyFrom("apaText"); });
-  if (m) m.addEventListener("click", function () { copyFrom("mlaText"); });
+  if (a) {
+    a.addEventListener("click", function () { 
+      copyFrom("apaText", a); 
+    });
+  }
+  
+  if (m) {
+    m.addEventListener("click", function () { 
+      copyFrom("mlaText", m); 
+    });
+  }
 })();
-
 
 /* ============================================================
    FILE: index.php & adminindex.php
@@ -118,3 +143,34 @@
         }
     });
 })();
+
+/* ============================================================
+   FILE: edit.php
+   FUNCTION: Unsaved Changes & Unchanged Update Warning
+   ============================================================ */
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('editForm');
+        const backBtn = document.getElementById('backBtn');
+        
+        const getFormString = () => new URLSearchParams(new FormData(form)).toString();
+        const initialState = getFormString();
+
+        form.addEventListener('submit', function(event) {
+            const currentState = getFormString();
+            
+            if (initialState === currentState) {
+                event.preventDefault();
+                alert("No changes detected.");
+            }
+        });
+
+        backBtn.addEventListener('click', function(event) {
+            const currentState = getFormString();
+            if (initialState !== currentState) {
+                const confirmLeave = confirm("You have unsaved changes. Are you sure you want to go back?");
+                if (!confirmLeave) {
+                    event.preventDefault();
+                }
+            }
+        });
+    });
