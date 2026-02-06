@@ -78,8 +78,8 @@ $result = mysqli_query($conn, $sql);
         </div>
         <div class="rightNav">
             <span class="adminName">Admin: <?= chars($_SESSION["admin_username"] ?? "admin") ?></span>
-            <a class="navLink" href="/index.php">Public View</a>
-            <a class="navBtn logout" href="admin.php?logout=1">Logout</a>
+            <a class="navLink" href="/Research-Paper-Directory-main/index.php">Public View</a>
+            <a class="navBtn logout" href="/Research-Paper-Directory-main/includes/admin.php">Logout</a>
         </div>
     </nav>
 
@@ -90,10 +90,11 @@ $result = mysqli_query($conn, $sql);
             </header>
 
             <section class="filterCard">
-                <form class="filters" method="get">
-                    <div class="formRow">
+                <form class="filters" method="get" autocomplete="off">
+                    <div class="formRow" style="position: relative;">
                         <label>Search Directory</label>
-                        <input type="text" name="query" value="<?= chars($query) ?>" placeholder="Title, author, or keyword...">
+                        <input type="text" id="query" name="query" value="<?= chars($query) ?>" placeholder="Title, author, or keyword...">
+                        <div id="searchSuggestions" class="suggestions-container"></div>
                     </div>
 
                     <div class="formGrid">
@@ -166,5 +167,6 @@ $result = mysqli_query($conn, $sql);
             </section>
         </div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>
