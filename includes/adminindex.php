@@ -78,8 +78,8 @@ $result = mysqli_query($conn, $sql);
         </div>
         <div class="rightNav">
             <span class="adminName">Admin: <?= chars($_SESSION["admin_username"] ?? "admin") ?></span>
-            <a class="navLink" href="/Research-Paper-Directory-main/index.php">Public View</a>
-            <a class="navBtn logout" href="/Research-Paper-Directory-main/includes/admin.php">Logout</a>
+            <a class="navLink" href="../index.php">Public View</a>
+            <a class="navBtn logout" href="admin.php?logout=1">Logout</a>
         </div>
     </nav>
 
