@@ -113,38 +113,6 @@ if (isset($_POST['save'])) {
     </div>
   </div>
 
-  <script>
-    (function () {
-      var wrap = document.getElementById("authorsWrap");
-      var add = document.getElementById("addAuthor");
-
-      function makeRow(value) {
-        var row = document.createElement("div");
-        row.className = "authorRow";
-
-        var input = document.createElement("input");
-        input.className = "input";
-        input.type = "text";
-        input.name = "authors[]";
-        input.value = value || "";
-
-        var del = document.createElement("button");
-        del.className = "btn";
-        del.type = "button";
-        del.textContent = "-";
-        del.addEventListener("click", function () {
-          row.parentNode.removeChild(row);
-        });
-
-        row.appendChild(input);
-        row.appendChild(del);
-        return row;
-      }
-
-      add.addEventListener("click", function () {
-        wrap.appendChild(makeRow(""));
-      });
-    })();
-  </script>
+  <script src="script.js"></script>
 </body>
 </html>
