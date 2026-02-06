@@ -1,4 +1,7 @@
-<?php include "includes/config.php"; ?>
+<?php 
+include "includes/config.php"; 
+session_start(); // Added to detect active sessions
+?>
 
 <!DOCTYPE html>
 <html>
@@ -13,7 +16,11 @@
       <span class="title">Research Paper Directory</span>
     </div>
     <div class="rightNav">
-      <a class="btn btn-admin" href="includes/admin.php">Admin Login</a>
+      <?php if (isset($_SESSION["admin_logged_in"]) && $_SESSION["admin_logged_in"] === true): ?>
+          <a class="btn btn-admin" href="includes/admin.php">Back to Dashboard</a>
+      <?php else: ?>
+          <a class="btn btn-admin" href="includes/admin.php">Admin Login</a>
+      <?php endif; ?>
     </div>
   </div>
 
