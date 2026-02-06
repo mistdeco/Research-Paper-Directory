@@ -74,7 +74,7 @@ function chars($v) {
 
         <div class="formRow actions">
           <button class="btn btn-primary" type="submit">Login</button>
-          <a class="btn" href="/index.php">Cancel</a>
+          <a class="btn" href="/Research-Paper-Directory-main/index.php">Cancel</a>
         </div>
       </form>
     </div>
