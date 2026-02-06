@@ -3,39 +3,32 @@
    FUNCTION: Add Authors
    ============================================================ */
 (function () {
-  var wrap = document.getElementById("authorsWrap");
-  var add = document.getElementById("addAuthor");
-  
-  // Guard clause for edit.php logic
-  if (!add) return;
+  const countInput = document.getElementById("authorCount");
+  const wrap = document.getElementById("authorsWrap");
 
-  function makeRow(value) {
-    var row = document.createElement("div");
-    row.className = "authorRow";
+  if (!countInput || !wrap) return;
 
-    var input = document.createElement("input");
-    input.className = "input";
-    input.type = "text";
-    input.name = "authors[]";
-    input.value = value || "";
+  countInput.addEventListener("input", function () {
+    const count = parseInt(this.value) || 0;
+    wrap.innerHTML = "";
 
-    var del = document.createElement("button");
-    del.className = "btn";
-    del.type = "button";
-    del.textContent = "-";
-    del.addEventListener("click", function () {
-      row.parentNode.removeChild(row);
-    });
+    for (let i = 1; i <= count; i++) {
+      const row = document.createElement("div");
+      row.className = "authorRow";
 
-    row.appendChild(input);
-    row.appendChild(del);
-    return row;
-  }
+      const input = document.createElement("input");
+      input.className = "input";
+      input.type = "text";
+      input.name = "authors[]";
+      input.placeholder = "Author " + i;
+      input.required = true;
 
-  add.addEventListener("click", function () {
-    wrap.appendChild(makeRow(""));
+      row.appendChild(input);
+      wrap.appendChild(row);
+    }
   });
 })();
+
 
 
 /* ============================================================
