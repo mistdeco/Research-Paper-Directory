@@ -132,10 +132,18 @@
 
       <section class="filterCard">
         <form class="filters" method="get" action="index.php">
-          <div class="formRow">
-            <label for="query">Search</label>
-            <input id="query" type="text" name="query" value="<?= chars($query) ?>" maxlength="120" placeholder="Title, author, or keyword">
-          </div>
+          <div class="formRow" style="position: relative;">
+            <label>Search Directory</label>
+
+    <input type="text"
+        id="query"
+        name="query"
+        value="<?= chars($query ?? "") ?>"
+        placeholder="Title, author, or keyword..."
+        autocomplete="off">
+    <div id="searchSuggestions" class="suggestions-container"></div>
+</div>
+
 
           <div class="formRow inline">
             <div class="field">
@@ -278,6 +286,6 @@
 
     </div>
   </div>
-
+    <script src="/Research-Paper-Directory-main/includes/script.js"></script>
 </body>
 </html>
