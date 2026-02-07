@@ -76,16 +76,36 @@ if (isset($_POST['update'])) {
             <input class="input" type="text" name="title" value="<?php echo htmlspecialchars($row['title']); ?>" required>
           </div>
 
-             <div class="field">
+                       <div class="field">
             <div class="label">Number of Authors</div>
-            <input class="input" type="number" id="authorCount" min="1" max="20" placeholder="e.g. 3" required>
+            <input
+              class="input"
+              type="number"
+              id="authorCount"
+              min="1"
+              max="20"
+              value="<?= count($authorItems) ?>"
+              required
+            >
           </div>
 
           <div class="field">
             <div class="label">Authors</div>
-            <div id="authorsWrap"></div>
-            <small class="meta">Author fields will appear based on the number entered.</small>
+            <div id="authorsWrap">
+              <?php foreach ($authorItems as $i => $author): ?>
+                <div class="authorRow">
+                  <input
+                    class="input"
+                    type="text"
+                    name="authors[]"
+                    value="<?= htmlspecialchars($author, ENT_QUOTES, 'UTF-8') ?>"
+                    required
+                  >
+                </div>
+              <?php endforeach; ?>
+            </div>
           </div>
+
 
           <div class="field">
             <div class="label">Keywords</div>
