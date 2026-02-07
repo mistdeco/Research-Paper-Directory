@@ -1,6 +1,6 @@
 /* ============================================================
    FILE: add.php & edit.php
-   FUNCTION: Add Authors
+   FUNCTION: Add Authors (with value memory)
    ============================================================ */
 (function () {
   const countInput = document.getElementById("authorCount");
@@ -8,26 +8,64 @@
 
   if (!countInput || !wrap) return;
 
-  countInput.addEventListener("input", function () {
-    const count = parseInt(this.value) || 0;
-    wrap.innerHTML = "";
+  // MEMORY for author values (persists even if inputs are removed)
+  const authorCache = [];
 
-    for (let i = 1; i <= count; i++) {
-      const row = document.createElement("div");
-      row.className = "authorRow";
+  function createAuthorRow(index) {
+    const row = document.createElement("div");
+    row.className = "authorRow";
 
-      const input = document.createElement("input");
-      input.className = "input";
-      input.type = "text";
-      input.name = "authors[]";
-      input.placeholder = "Author " + i;
-      input.required = true;
+    const input = document.createElement("input");
+    input.className = "input";
+    input.type = "text";
+    input.name = "authors[]";
+    input.placeholder = "Author " + (index + 1);
+    input.required = true;
 
-      row.appendChild(input);
-      wrap.appendChild(row);
+    // restore cached value if exists
+    if (authorCache[index]) {
+      input.value = authorCache[index];
     }
+
+    // keep cache updated while typing
+    input.addEventListener("input", function () {
+      authorCache[index] = this.value;
+    });
+
+    row.appendChild(input);
+    return row;
+  }
+
+  function syncAuthors(count) {
+    const current = wrap.children.length;
+
+    // ADD fields
+    for (let i = current; i < count; i++) {
+      wrap.appendChild(createAuthorRow(i));
+    }
+
+    // REMOVE fields (DOM only, cache is kept)
+    for (let i = current; i > count; i--) {
+      wrap.removeChild(wrap.lastElementChild);
+    }
+  }
+
+  // INITIAL LOAD (important for edit.php)
+  [...wrap.querySelectorAll("input")].forEach((input, i) => {
+    authorCache[i] = input.value;
+    input.addEventListener("input", function () {
+      authorCache[i] = this.value;
+    });
+  });
+
+  syncAuthors(parseInt(countInput.value) || 1);
+
+  countInput.addEventListener("input", function () {
+    const count = Math.max(1, parseInt(this.value) || 1);
+    syncAuthors(count);
   });
 })();
+
 
 
 
