@@ -1,6 +1,6 @@
 /* ============================================================
    FILE: add.php & edit.php
-   FUNCTION: Add Authors (with value memory)
+   FUNCTION: Author inputs (no reset on count change)
    ============================================================ */
 (function () {
   const countInput = document.getElementById("authorCount");
@@ -8,11 +8,11 @@
 
   if (!countInput || !wrap) return;
 
-  // MEMORY for author values (persists even if inputs are removed)
-  const authorCache = [];
+  function ensureRow(index) {
+    let row = wrap.children[index];
+    if (row) return row;
 
-  function createAuthorRow(index) {
-    const row = document.createElement("div");
+    row = document.createElement("div");
     row.className = "authorRow";
 
     const input = document.createElement("input");
@@ -20,53 +20,44 @@
     input.type = "text";
     input.name = "authors[]";
     input.placeholder = "Author " + (index + 1);
-    input.required = true;
-
-    // restore cached value if exists
-    if (authorCache[index]) {
-      input.value = authorCache[index];
-    }
-
-    // keep cache updated while typing
-    input.addEventListener("input", function () {
-      authorCache[index] = this.value;
-    });
 
     row.appendChild(input);
+    wrap.appendChild(row);
     return row;
   }
 
-  function syncAuthors(count) {
-    const current = wrap.children.length;
+  function setRowActive(row, active) {
+    const input = row.querySelector("input[name='authors[]']");
+    if (!input) return;
 
-    // ADD fields
-    for (let i = current; i < count; i++) {
-      wrap.appendChild(createAuthorRow(i));
+    row.style.display = active ? "" : "none";
+    input.disabled = !active;
+    input.required = active;
+  }
+
+  function syncAuthors(count) {
+    const n = Math.max(1, parseInt(count, 10) || 1);
+
+    // create rows up to n (never remove rows)
+    for (let i = 0; i < n; i++) {
+      const row = ensureRow(i);
+      setRowActive(row, true);
     }
 
-    // REMOVE fields (DOM only, cache is kept)
-    for (let i = current; i > count; i--) {
-      wrap.removeChild(wrap.lastElementChild);
+    // hide rows beyond n (keep their values)
+    for (let i = n; i < wrap.children.length; i++) {
+      setRowActive(wrap.children[i], false);
     }
   }
 
-  // INITIAL LOAD (important for edit.php)
-  [...wrap.querySelectorAll("input")].forEach((input, i) => {
-    authorCache[i] = input.value;
-    input.addEventListener("input", function () {
-      authorCache[i] = this.value;
-    });
-  });
+  // initial render
+  syncAuthors(countInput.value);
 
-  syncAuthors(parseInt(countInput.value) || 1);
-
+  // react to count changes
   countInput.addEventListener("input", function () {
-    const count = Math.max(1, parseInt(this.value) || 1);
-    syncAuthors(count);
+    syncAuthors(this.value);
   });
 })();
-
-
 
 
 /* ============================================================
@@ -289,6 +280,8 @@
     (function () {
       var wrap = document.getElementById("authorsWrap");
       var add = document.getElementById("addAuthor");
+
+      if (!wrap || !add) return;
 
       function makeRow(value) {
         var row = document.createElement("div");
