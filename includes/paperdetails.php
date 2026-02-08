@@ -1,7 +1,22 @@
 <?php
 include "config.php";
 $id = $_GET['id'];
-$result = mysqli_query($conn, "SELECT * FROM papers WHERE id=$id");
+$result = mysqli_query($conn,
+  "SELECT
+      p.*,
+      d.department,
+      GROUP_CONCAT(
+        DISTINCT TRIM(CONCAT(a.fName, ' ', IF(a.MI IS NULL OR a.MI = '', '', CONCAT(a.MI, '. ')), a.lName))
+        ORDER BY pa.authorOrder
+        SEPARATOR ', '
+      ) AS authors
+   FROM papers p
+   JOIN departments d ON d.id = p.departmentId
+   LEFT JOIN paper_authors pa ON pa.paperId = p.id
+   LEFT JOIN authors a ON a.id = pa.authorId
+   WHERE p.id=$id
+   GROUP BY p.id"
+);
 $row = mysqli_fetch_assoc($result);
 
 function chars($v) {
@@ -9,67 +24,80 @@ function chars($v) {
 }
 
 function apaCitation($title, $authors, $year) {
-  $authors = trim((string)$authors);
-  $year = trim((string)$year);
   $title = trim((string)$title);
-
-  $a = [];
-  if ($authors !== "") {
-    $parts = preg_split('/\s*,\s*/', $authors);
-    foreach ($parts as $p) {
-      $p = trim($p);
-      if ($p !== "") $a[] = $p;
-    }
-  }
-
-  $authorText = "Unknown author";
-  if (count($a) === 1) {
-    $authorText = $a[0];
-  } else if (count($a) === 2) {
-    $authorText = $a[0] . " & " . $a[1];
-  } else if (count($a) > 2) {
-    $last = array_pop($a);
-    $authorText = implode(", ", $a) . ", & " . $last;
-  }
-
+  $year = trim((string)$year);
   if ($year === "") $year = "n.d.";
 
+  $authorList = [];
+
+  foreach (preg_split('/\s*,\s*/', (string)$authors) as $name) {
+    $name = trim($name);
+    if ($name === "") continue;
+
+    // Expect: First M. Last
+    $parts = preg_split('/\s+/', $name);
+    if (count($parts) < 2) continue;
+
+    $last = array_pop($parts);
+    $initials = [];
+
+    foreach ($parts as $p) {
+      $p = str_replace('.', '', $p);
+      if ($p !== "") {
+        $initials[] = strtoupper(mb_substr($p, 0, 1)) . ".";
+      }
+    }
+
+    $authorList[] = $last . ", " . implode(" ", $initials);
+  }
+
+  if (count($authorList) === 0) {
+    $authorText = "Unknown author";
+  } elseif (count($authorList) === 1) {
+    $authorText = $authorList[0];
+  } elseif (count($authorList) === 2) {
+    $authorText = $authorList[0] . " & " . $authorList[1];
+  } else {
+    $last = array_pop($authorList);
+    $authorText = implode(", ", $authorList) . ", & " . $last;
+  }
   return $authorText . " (" . $year . "). " . $title . ".";
 }
 
 function mlaCitation($title, $authors, $year) {
-  $authors = trim((string)$authors);
-  $year = trim((string)$year);
   $title = trim((string)$title);
-
-  $a = [];
-  if ($authors !== "") {
-    $parts = preg_split('/\s*,\s*/', $authors);
-    foreach ($parts as $p) {
-      $p = trim($p);
-      if ($p !== "") $a[] = $p;
-    }
-  }
-
-  $authorText = "Unknown author";
-  if (count($a) === 1) {
-    $authorText = $a[0];
-  } else if (count($a) === 2) {
-    $authorText = $a[0] . " and " . $a[1];
-  } else if (count($a) > 2) {
-    $authorText = $a[0] . ", et al.";
-  }
-
+  $year = trim((string)$year);
   if ($year === "") $year = "n.d.";
 
-  return $authorText . ". \"" . $title . ".\" " . $year . ".";
+  $names = array_filter(array_map("trim", preg_split('/\s*,\s*/', (string)$authors)));
+
+  if (count($names) === 0) {
+    $authorText = "Unknown author";
+  } else {
+    $first = array_shift($names);
+    $parts = preg_split('/\s+/', $first);
+    $last = array_pop($parts);
+    $firstName = implode(" ", $parts);
+
+    $authorText = $last . ", " . $firstName;
+
+    if (count($names) === 1) {
+      $second = preg_split('/\s+/', $names[0]);
+      $secondLast = array_pop($second);
+      $secondFirst = implode(" ", $second);
+      $authorText .= ", and " . $secondFirst . " " . $secondLast;
+    } elseif (count($names) > 1) {
+      $authorText .= ", et al.";
+    }
+  }
+  return $authorText . '. "' . $title . '." ' . $year . '.';
 }
 
 $apa = "";
 $mla = "";
 if ($row) {
-  $apa = apaCitation($row["title"], $row["authors"], $row["year_published"]);
-  $mla = mlaCitation($row["title"], $row["authors"], $row["year_published"]);
+  $apa = apaCitation($row["title"], $row["authors"], $row["yearPublished"]);
+  $mla = mlaCitation($row["title"], $row["authors"], $row["yearPublished"]);
 }
 ?>
 <!DOCTYPE html>
@@ -99,10 +127,10 @@ if ($row) {
             <div class="paperMeta">
               <span class="metaDepartment"><?= chars($row['department']) ?></span>
               <span class="lineBreak">·</span>
-              <span class="mYear"><?= chars($row['year_published']) ?></span>
-              <?php if (!empty($row['created_at'])) { ?>
+              <span class="mYear"><?= chars($row['yearPublished']) ?></span>
+              <?php if (!empty($row['createdAt'])) { ?>
                 <span class="lineBreak">·</span>
-                <time class="mDate"><?= chars($row['created_at']) ?></time>
+                <time class="mDate"><?= chars($row['createdAt']) ?></time>
               <?php } ?>
             </div>
 

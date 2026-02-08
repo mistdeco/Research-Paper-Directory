@@ -1,6 +1,6 @@
 <?php 
 include "includes/config.php"; 
-session_start(); // Added to detect active sessions
+session_start();
 ?>
 
 <!DOCTYPE html>
@@ -31,21 +31,11 @@ session_start(); // Added to detect active sessions
       </header>
 
       <?php
-      $departmentList = [
-        "" => "All",
-        "Computer Science" => "Computer Science",
-        "Information Technology" => "Information Technology",
-        "Engineering" => "Engineering",
-        "Mathematics" => "Mathematics",
-        "Business" => "Business"
-      ];
-
       $sortByOption = [
         "title" => "Title",
         "year_published" => "Publication",
         "created_at" => "Date Added"
       ];
-
       $sortDirOption = [
         "asc" => "Ascending",
         "desc" => "Descending"
@@ -60,41 +50,38 @@ session_start(); // Added to detect active sessions
       $page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
       $perPage = 5;
       if ($page < 1) $page = 1;
-
       if (mb_strlen($query) > 120) $query = mb_substr($query, 0, 120);
-
       if ($year !== "" && (!ctype_digit($year) || strlen($year) !== 4)) {
         $year = "";
       }
-
-      if (!array_key_exists($department, $departmentList)) {
-        $department = "";
-      }
-
+      if (mb_strlen($department) > 100) $department = mb_substr($department, 0, 100);
       if (!array_key_exists($sortBy, $sortByOption)) {
         $sortBy = "year_published";
       }
-
       if (!array_key_exists($sortDir, $sortDirOption)) {
         $sortDir = "asc";
       }
 
       $where = [];
+      $joins = " FROM papers p
+                JOIN departments d ON d.id = p.departmentId
+                LEFT JOIN paper_authors pa ON pa.paperId = p.id
+                LEFT JOIN authors a ON a.id = pa.authorId";
 
       if ($query !== "") {
         $qEsc = mysqli_real_escape_string($conn, $query);
         $like = "'%" . $qEsc . "%'";
-        $where[] = "(title LIKE $like OR authors LIKE $like OR keywords LIKE $like)";
+        $where[] = "(p.title LIKE $like OR p.keywords LIKE $like OR a.fName LIKE $like OR a.lName LIKE $like)";
       }
 
       if ($year !== "") {
         $yearInt = (int)$year;
-        $where[] = "year_published = $yearInt";
+        $where[] = "p.yearPublished = $yearInt";
       }
 
       if ($department !== "") {
         $deptEsc = mysqli_real_escape_string($conn, $department);
-        $where[] = "department = '" . $deptEsc . "'";
+        $where[] = "d.department LIKE '%" . $deptEsc . "%'";
       }
 
       $sqlState = "";
@@ -103,10 +90,12 @@ session_start(); // Added to detect active sessions
       }
 
       $dirSql = ($sortDir === "desc") ? "DESC" : "ASC";
-      $orderField = $sortBy;
-      $orderBy = "$orderField $dirSql, id $dirSql";
+      $orderField = "p.yearPublished";
+      if ($sortBy === "title") $orderField = "p.title";
+      if ($sortBy === "created_at") $orderField = "p.createdAt";
+      $orderBy = "$orderField $dirSql, p.id $dirSql";
 
-      $sqlCount = "SELECT COUNT(*) AS cnt FROM papers" . $sqlState;
+      $sqlCount = "SELECT COUNT(DISTINCT p.id) AS cnt" . $joins . $sqlState;
       $resCount = mysqli_query($conn, $sqlCount);
       $rowcount = 0;
       if ($resCount) {
@@ -117,13 +106,24 @@ session_start(); // Added to detect active sessions
       $pagecount = (int)ceil($rowcount / $perPage);
       if ($pagecount < 1) $pagecount = 1;
       if ($page > $pagecount) $page = $pagecount;
-
       $offset = ($page - 1) * $perPage;
 
-      $sql = "SELECT id, title, department, year_published, authors, keywords, created_at
-              FROM papers" . $sqlState . " ORDER BY $orderBy
+      $sql = "SELECT
+                p.id,
+                p.title,
+                d.department,
+                p.yearPublished,
+                p.createdAt,
+                p.keywords,
+                GROUP_CONCAT(
+                  DISTINCT TRIM(CONCAT(a.fName, ' ', IF(a.MI IS NULL OR a.MI = '', '', CONCAT(a.MI, '. ')), a.lName))
+                  ORDER BY pa.authorOrder
+                  SEPARATOR ', '
+                ) AS authors
+              " . $joins . $sqlState . "
+              GROUP BY p.id
+              ORDER BY $orderBy
               LIMIT $perPage OFFSET $offset";
-
       $result = mysqli_query($conn, $sql);
 
       function chars($v) {
@@ -142,14 +142,14 @@ session_start(); // Added to detect active sessions
           <div class="formRow" style="position: relative;">
             <label>Search Directory</label>
 
-    <input type="text"
-        id="query"
-        name="query"
-        value="<?= chars($query ?? "") ?>"
-        placeholder="Title, author, or keyword..."
-        autocomplete="off">
-    <div id="searchSuggestions" class="suggestions-container"></div>
-</div>
+            <input type="text"
+                id="query"
+                name="query"
+                value="<?= chars($query ?? "") ?>"
+                placeholder="Title, author, or keyword..."
+                autocomplete="off">
+            <div id="searchSuggestions" class="suggestions-container"></div>
+          </div>
 
 
           <div class="formRow inline">
@@ -158,15 +158,10 @@ session_start(); // Added to detect active sessions
               <input id="year" type="text" name="year" value="<?= chars($year) ?>" placeholder="YYYY" maxlength="4">
             </div>
 
-            <div class="field">
-              <label for="department">Department</label>
-              <select id="department" name="department">
-                <?php foreach ($departmentList as $value => $label) { ?>
-                  <option value="<?= chars($value) ?>" <?= ($department === $value ? "selected" : "") ?>>
-                    <?= chars($label) ?>
-                  </option>
-                <?php } ?>
-              </select>
+            <div class="formRow" style="position: relative;">
+             <label for="department">Department</label>
+             <input id="department" type="text" name="department" value="<?= chars($department) ?>" placeholder="Department" autocomplete="off" maxlength="100">
+             <div id="departmentSuggestions" class="suggestions-container"></div>
             </div>
 
             <div class="field">
@@ -223,10 +218,10 @@ session_start(); // Added to detect active sessions
                     <div class="metaResult">
                       <span class="metaDepartment"><?= chars($row["department"]) ?></span>
                       <span class="lineBreak">·</span>
-                      <span class="mYear"><?= chars($row["year_published"]) ?></span>
-                      <?php if (!empty($row["created_at"])) { ?>
+                      <span class="mYear"><?= chars($row["yearPublished"]) ?></span>
+                      <?php if (!empty($row["createdAt"])) { ?>
                         <span class="lineBreak">·</span>
-                        <time class="mDate"><?= chars($row["created_at"]) ?></time>
+                        <time class="mDate"><?= chars($row["createdAt"]) ?></time>
                       <?php } ?>
                     </div>
 
@@ -257,6 +252,7 @@ session_start(); // Added to detect active sessions
             $start = $page - $screen;
             $end = $page + $screen;
             if ($start < 1) $start = 1;
+            $end = $page + $screen;
             if ($end > $pagecount) $end = $pagecount;
 
             if ($start > 1) {

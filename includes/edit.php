@@ -16,14 +16,53 @@ $departmentList = [
   "Business" => "Business"
 ];
 
+function parseAuthorName($name) {
+  $name = trim(preg_replace('/\s+/', ' ', (string)$name));
+  if ($name === "") return ["", null, ""];
+  $parts = preg_split('/\s+/', $name);
+  $fName = $parts[0] ?? "";
+  $lName = "";
+  $MI = null;
+
+  if (count($parts) === 1) {
+    $lName = "";
+  } else if (count($parts) === 2) {
+    $lName = $parts[1];
+  } else {
+    $mid = $parts[1];
+    $MI = strtoupper(mb_substr($mid, 0, 1));
+    $lName = implode(' ', array_slice($parts, 2));
+  }
+  return [$fName, $MI, $lName];
+}
+
+
 $id = $_GET['id'];
-$result = mysqli_query($conn, "SELECT * FROM papers WHERE id=$id");
+$result = mysqli_query($conn,
+  "SELECT p.*, d.department AS departmentName
+   FROM papers p
+   JOIN departments d ON d.id = p.departmentId
+   WHERE p.id=$id"
+);
 $row = mysqli_fetch_assoc($result);
 
 $authorItems = [];
-if ($row && isset($row['authors'])) {
-  $authorItems = preg_split('/\s*,\s*/', trim($row['authors']));
-  $authorItems = array_values(array_filter($authorItems, function($v){ return $v !== ""; }));
+if ($row) {
+  $aRes = mysqli_query(
+    $conn,
+    "SELECT a.fName, a.MI, a.lName, pa.authorOrder
+     FROM paper_authors pa
+     JOIN authors a ON a.id = pa.authorId
+     WHERE pa.paperId=$id
+     ORDER BY pa.authorOrder ASC"
+  );
+  if ($aRes) {
+    while ($aRow = mysqli_fetch_assoc($aRes)) {
+      $full = trim($aRow['fName'] . ' ' . ($aRow['MI'] ? ($aRow['MI'] . '.') : '') . ' ' . $aRow['lName']);
+      $full = trim(preg_replace('/\s+/', ' ', $full));
+      if ($full !== "") $authorItems[] = $full;
+    }
+  }
 }
 if (count($authorItems) === 0) $authorItems = [""];
 
@@ -33,23 +72,68 @@ if (isset($_POST['update'])) {
   if (!is_array($authorsArr)) $authorsArr = [];
   $authorsArr = array_map('trim', $authorsArr);
   $authorsArr = array_values(array_filter($authorsArr, function($v){ return $v !== ""; }));
-  $authors = implode(", ", $authorsArr);
   $keywords = $_POST['keywords'];
   $department = $_POST['departmentItem'];
   $year_published = $_POST['year_published'];
   $abstract = $_POST['abstract'];
 
-  mysqli_query(
-    $conn,
+  $titleEsc = mysqli_real_escape_string($conn, $title);
+  $keywordsEsc = mysqli_real_escape_string($conn, $keywords);
+  $deptName = trim((string)$department);
+  $deptEsc = mysqli_real_escape_string($conn, $deptName);
+  $yearInt = (int)$year_published;
+  $abstractEsc = mysqli_real_escape_string($conn, $abstract);
+
+  mysqli_query($conn, "START TRANSACTION");
+  mysqli_query($conn, 
+    "INSERT INTO departments (department)
+     VALUES ('$deptEsc')
+     ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
+  );
+  $departmentId = (int)mysqli_insert_id($conn);
+
+  mysqli_query($conn,
     "UPDATE papers
-     SET title='$title',
-         authors='$authors',
-         keywords='$keywords',
-         department='$department',
-         year_published='$year_published',
-         abstract='$abstract'
+     SET title='$titleEsc',
+         keywords='$keywordsEsc',
+         departmentId=$departmentId,
+         yearPublished=$yearInt,
+         abstract='$abstractEsc'
      WHERE id=$id"
   );
+
+  mysqli_query($conn, "DELETE FROM paper_authors WHERE paperId=$id");
+
+  $seenAuthorIds = [];
+  $order = 1;
+  foreach ($authorsArr as $authorRaw) {
+    list($fName, $MI, $lName) = parseAuthorName($authorRaw);
+    $fName = trim((string)$fName);
+    $lName = trim((string)$lName);
+    if ($fName === "" || $lName === "") continue;
+    $fEsc = mysqli_real_escape_string($conn, $fName);
+    $lEsc = mysqli_real_escape_string($conn, $lName);
+    $miSql = "NULL";
+    if ($MI !== null && trim((string)$MI) !== "") {
+      $miSql = "'" . mysqli_real_escape_string($conn, $MI) . "'";
+    }
+
+    mysqli_query($conn,
+      "INSERT INTO authors (fName, MI, lName)
+       VALUES ('$fEsc', $miSql, '$lEsc')
+       ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
+    );
+    $authorId = (int)mysqli_insert_id($conn);
+    if ($authorId < 1 || isset($seenAuthorIds[$authorId])) continue;
+    $seenAuthorIds[$authorId] = true;
+
+    mysqli_query($conn,
+      "INSERT INTO paper_authors (paperId, authorId, authorOrder)
+       VALUES ($id, $authorId, $order)"
+    );
+    $order++;
+  }
+  mysqli_query($conn, "COMMIT");
 
   header("Location: adminindex.php");
   exit;
@@ -76,7 +160,7 @@ if (isset($_POST['update'])) {
             <input class="input" type="text" name="title" value="<?php echo htmlspecialchars($row['title']); ?>" required>
           </div>
 
-                       <div class="field">
+          <div class="field">
             <div class="label">Number of Authors</div>
             <input
               class="input"
@@ -94,16 +178,11 @@ if (isset($_POST['update'])) {
             <div id="authorsWrap">
               <?php foreach ($authorItems as $i => $author): ?>
                 <div class="authorRow">
-                  <input
-                    class="input"
-                    type="text"
-                    name="authors[]"
-                    value="<?= htmlspecialchars($author, ENT_QUOTES, 'UTF-8') ?>"
-                    required
-                  >
+                  <input class="input" type="text" name="authors[]" value="<?= htmlspecialchars($author, ENT_QUOTES, 'UTF-8') ?>" required>
                 </div>
               <?php endforeach; ?>
             </div>
+            <small>Use the format: Firstname Middlename/MI Lastname</small>
           </div>
 
 
@@ -114,20 +193,12 @@ if (isset($_POST['update'])) {
 
           <div class="field">
             <div class="label">Department</div>
-            <select class="input" name="departmentItem" required>
-              <?php foreach ($departmentList as $value => $label) { ?>
-                <?php if ($value !== "") { ?>
-                  <option value="<?php echo htmlspecialchars($value); ?>" <?php echo ($row['department'] === $value ? "selected" : ""); ?>>
-                    <?php echo htmlspecialchars($label); ?>
-                  </option>
-                <?php } ?>
-              <?php } ?>
-            </select>
+            <input class="input" type="text" name="departmentItem" value="<?php echo htmlspecialchars($row['departmentName']); ?>" required>
           </div>
 
           <div class="field">
             <div class="label">Publication Year</div>
-            <input class="input" type="text" name="year_published" value="<?php echo htmlspecialchars($row['year_published']); ?>">
+            <input class="input" type="text" name="year_published" value="<?php echo htmlspecialchars($row['yearPublished']); ?>">
           </div>
 
           <div class="field">

@@ -17,15 +17,6 @@ function url($p) {
     return "adminindex.php?" . http_build_query($qs);
 }
 
-$departmentList = [
-    "" => "All Departments",
-    "Computer Science" => "Computer Science",
-    "Information Technology" => "Information Technology",
-    "Engineering" => "Engineering",
-    "Mathematics" => "Mathematics",
-    "Business" => "Business"
-];
-
 $sortByOption = ["title" => "Title", "year_published" => "Publication", "created_at" => "Date Added"];
 $sortDirOption = ["asc" => "Ascending", "desc" => "Descending"];
 
@@ -39,28 +30,53 @@ $page = isset($_GET["page"]) ? (int)$_GET["page"] : 1;
 $perPage = 5;
 
 $where = [];
+$joins = " FROM papers p
+          JOIN departments d ON d.id = p.departmentId
+          LEFT JOIN paper_authors pa ON pa.paperId = p.id
+          LEFT JOIN authors a ON a.id = pa.authorId";
+
 if ($query !== "") {
     $qEsc = mysqli_real_escape_string($conn, $query);
-    $where[] = "(title LIKE '%$qEsc%' OR authors LIKE '%$qEsc%' OR keywords LIKE '%$qEsc%')";
+    $where[] = "(p.title LIKE '%$qEsc%' OR p.keywords LIKE '%$qEsc%' OR a.fName LIKE '%$qEsc%' OR a.lName LIKE '%$qEsc%')";
 }
 if ($year !== "" && ctype_digit($year)) {
-    $where[] = "year_published = " . (int)$year;
+    $where[] = "p.yearPublished = " . (int)$year;
 }
+if (mb_strlen($department) > 100) $department = mb_substr($department, 0, 100);
 if ($department !== "") {
     $deptEsc = mysqli_real_escape_string($conn, $department);
-    $where[] = "department = '$deptEsc'";
+    $where[] = "d.department LIKE '%$deptEsc%'";
 }
 
 $sqlState = count($where) > 0 ? " WHERE " . implode(" AND ", $where) : "";
-$orderBy = "$sortBy " . ($sortDir === "desc" ? "DESC" : "ASC");
 
-$resCount = mysqli_query($conn, "SELECT COUNT(*) AS cnt FROM papers $sqlState");
+$orderField = "p.yearPublished";
+if ($sortBy === "title") $orderField = "p.title";
+if ($sortBy === "created_at") $orderField = "p.createdAt";
+$orderBy = $orderField . " " . ($sortDir === "desc" ? "DESC" : "ASC");
+
+$resCount = mysqli_query($conn, "SELECT COUNT(DISTINCT p.id) AS cnt" . $joins . $sqlState);
 $rowcount = ($resCount) ? (int)mysqli_fetch_assoc($resCount)["cnt"] : 0;
 $pagecount = max(1, (int)ceil($rowcount / $perPage));
 $page = max(1, min($page, $pagecount));
 $offset = ($page - 1) * $perPage;
 
-$sql = "SELECT * FROM papers $sqlState ORDER BY $orderBy LIMIT $perPage OFFSET $offset";
+$sql = "SELECT
+            p.id,
+            p.title,
+            d.department,
+            p.yearPublished,
+            p.createdAt,
+            p.keywords,
+            GROUP_CONCAT(
+              DISTINCT TRIM(CONCAT(a.fName, ' ', IF(a.MI IS NULL OR a.MI = '', '', CONCAT(a.MI, '. ')), a.lName))
+              ORDER BY pa.authorOrder
+              SEPARATOR ', '
+            ) AS authors
+        " . $joins . $sqlState . "
+        GROUP BY p.id
+        ORDER BY $orderBy
+        LIMIT $perPage OFFSET $offset";
 $result = mysqli_query($conn, $sql);
 ?>
 
@@ -102,14 +118,13 @@ $result = mysqli_query($conn, $sql);
                             <label>Year</label>
                             <input type="text" name="year" value="<?= chars($year) ?>" placeholder="YYYY" maxlength="4">
                         </div>
-                        <div class="field">
-                            <label>Department</label>
-                            <select name="department">
-                                <?php foreach ($departmentList as $val => $lab): ?>
-                                    <option value="<?= chars($val) ?>" <?= ($department === $val ? "selected" : "") ?>><?= chars($lab) ?></option>
-                                <?php endforeach; ?>
-                            </select>
+
+                        <div class="field" style="position: relative;">
+                          <label for="department">Department</label>
+                          <input id="department" type="text" name="department" value="<?= chars($department) ?>" placeholder="Department" autocomplete="off" maxlength="100">
+                          <div id="departmentSuggestions" class="suggestions-container"></div>
                         </div>
+
                         <div class="field">
                             <label>Sort By</label>
                             <select name="sortBy">
@@ -138,9 +153,9 @@ $result = mysqli_query($conn, $sql);
                                 <h3 class="paperTitle"><?= chars($row["title"]) ?></h3>
                                 <div class="paperMeta">
                                     <span class="deptTag"><?= chars($row["department"]) ?></span> • 
-                                    <span class="yearTag"><?= chars($row["year_published"]) ?></span>
-                                    <?php if (!empty($row["created_at"])): ?>
-                                        • <time class="dateTag"><?= chars($row["created_at"]) ?></time>
+                                    <span class="yearTag"><?= chars($row["yearPublished"]) ?></span>
+                                    <?php if (!empty($row["createdAt"])): ?>
+                                        • <time class="dateTag"><?= chars($row["createdAt"]) ?></time>
                                     <?php endif; ?>
                                 </div>
                                 <div class="infoLine"><strong>Authors:</strong> <?= chars($row["authors"]) ?></div>

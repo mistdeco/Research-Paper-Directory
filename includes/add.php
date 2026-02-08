@@ -7,34 +7,99 @@ if (!isset($_SESSION["admin_logged_in"]) || $_SESSION["admin_logged_in"] !== tru
   exit;
 }
 
-$departmentList = [
-  "" => "All",
-  "Computer Science" => "Computer Science",
-  "Information Technology" => "Information Technology",
-  "Engineering" => "Engineering",
-  "Mathematics" => "Mathematics",
-  "Business" => "Business"
-];
+function parseAuthorName($name) {
+  $name = trim(preg_replace('/\s+/', ' ', (string)$name));
+  if ($name === "") return ["", null, ""];
+
+  $parts = preg_split('/\s+/', $name);
+  $fName = $parts[0] ?? "";
+  $lName = "";
+  $MI = null;
+
+  if (count($parts) === 1) {
+    $lName = "";
+  } else if (count($parts) === 2) {
+    $lName = $parts[1];
+  } else {
+    $mid = $parts[1];
+    $MI = strtoupper(mb_substr($mid, 0, 1));
+    $lName = implode(' ', array_slice($parts, 2));
+  }
+
+  return [$fName, $MI, $lName];
+}
 
 if (isset($_POST['save'])) {
-  $title = $_POST['title'];
+  $title = trim((string)($_POST['title'] ?? ""));
+  $keywords = trim((string)($_POST['keywords'] ?? ""));
+  $departmentName = trim((string)($_POST['departmentItem'] ?? ""));
+  $yearPublished = (int)($_POST['year_published'] ?? 0);
+  $abstract = trim((string)($_POST['abstract'] ?? ""));
 
   $authorsArr = isset($_POST['authors']) ? $_POST['authors'] : [];
   if (!is_array($authorsArr)) $authorsArr = [];
   $authorsArr = array_map('trim', $authorsArr);
   $authorsArr = array_values(array_filter($authorsArr, function($v){ return $v !== ""; }));
-  $authors = implode(", ", $authorsArr);
 
-  $keywords = $_POST['keywords'];
-  $department = $_POST['departmentItem'];
-  $year_published = $_POST['year_published'];
-  $abstract = $_POST['abstract'];
+  $titleEsc = mysqli_real_escape_string($conn, $title);
+  $keywordsEsc = mysqli_real_escape_string($conn, $keywords);
+  $deptEsc = mysqli_real_escape_string($conn, $departmentName);
+  $abstractEsc = mysqli_real_escape_string($conn, $abstract);
+
+  mysqli_query($conn, "START TRANSACTION");
 
   mysqli_query(
     $conn,
-    "INSERT INTO papers (title, authors, keywords, department, year_published, abstract)
-     VALUES ('$title','$authors','$keywords','$department','$year_published','$abstract')"
+    "INSERT INTO departments (department)
+     VALUES ('$deptEsc')
+     ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
   );
+  $departmentId = (int)mysqli_insert_id($conn);
+
+  mysqli_query(
+    $conn,
+    "INSERT INTO papers (title, keywords, departmentId, yearPublished, abstract)
+     VALUES ('$titleEsc', '$keywordsEsc', $departmentId, $yearPublished, '$abstractEsc')"
+  );
+  $paperId = (int)mysqli_insert_id($conn);
+
+  $seenAuthorIds = [];
+  $order = 1;
+
+  foreach ($authorsArr as $authorRaw) {
+    list($fName, $MI, $lName) = parseAuthorName($authorRaw);
+    $fName = trim((string)$fName);
+    $lName = trim((string)$lName);
+    if ($fName === "" || $lName === "") continue;
+
+    $fEsc = mysqli_real_escape_string($conn, $fName);
+    $lEsc = mysqli_real_escape_string($conn, $lName);
+
+    $miSql = "NULL";
+    if ($MI !== null && trim((string)$MI) !== "") {
+      $miSql = "'" . mysqli_real_escape_string($conn, $MI) . "'";
+    }
+
+    mysqli_query(
+      $conn,
+      "INSERT INTO authors (fName, MI, lName)
+       VALUES ('$fEsc', $miSql, '$lEsc')
+       ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
+    );
+    $authorId = (int)mysqli_insert_id($conn);
+
+    if ($authorId < 1 || isset($seenAuthorIds[$authorId])) continue;
+    $seenAuthorIds[$authorId] = true;
+
+    mysqli_query(
+      $conn,
+      "INSERT INTO paper_authors (paperId, authorId, authorOrder)
+       VALUES ($paperId, $authorId, $order)"
+    );
+    $order++;
+  }
+
+  mysqli_query($conn, "COMMIT");
 
   header("Location: adminindex.php");
   exit;
@@ -62,16 +127,26 @@ if (isset($_POST['save'])) {
           </div>
 
           <div class="field">
-            <div class="label">Authors</div>
+            <div class="label">Number of Authors</div>
+            <input
+              class="input"
+              type="number"
+              id="authorCount"
+              min="1"
+              max="20"
+              value="1"
+              required
+            >
+          </div>
 
+          <div class="field">
+            <div class="label">Authors</div>
             <div id="authorsWrap">
               <div class="authorRow">
                 <input class="input" type="text" name="authors[]" required>
-                <button class="btn" type="button" id="addAuthor">+</button>
               </div>
             </div>
-
-            <small class="meta">Use + to add more authors.</small>
+            <small>Use the format: Firstname Middlename/MI Lastname</small>
           </div>
 
           <div class="field">
@@ -81,16 +156,7 @@ if (isset($_POST['save'])) {
 
           <div class="field">
             <div class="label">Department</div>
-            <select class="input" name="departmentItem" required>
-              <option value="" disabled selected>Select department</option>
-              <?php foreach ($departmentList as $value => $label) { ?>
-                <?php if ($value !== "") { ?>
-                  <option value="<?php echo htmlspecialchars($value, ENT_QUOTES, 'UTF-8'); ?>">
-                    <?php echo htmlspecialchars($label, ENT_QUOTES, 'UTF-8'); ?>
-                  </option>
-                <?php } ?>
-              <?php } ?>
-            </select>
+            <input class="input" type="text" name="departmentItem" required>
           </div>
 
           <div class="field">

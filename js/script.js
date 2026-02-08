@@ -176,6 +176,62 @@
 })();
 
 /* ============================================================
+   FILE: index.php & adminindex.php
+   FUNCTION: Department Suggestion
+   ============================================================ */
+(function () {
+    const deptInput = document.getElementById("department");
+    const suggestBox = document.getElementById("departmentSuggestions");
+
+    if (!deptInput || !suggestBox) return;
+
+    deptInput.addEventListener("input", function () {
+        const val = this.value.trim();
+
+        if (val.length < 1) {
+            suggestBox.innerHTML = "";
+            return;
+        }
+
+        // Detect admin or public page
+        const path = window.location.pathname.includes("admin")
+            ? "suggest.php?term="
+            : "includes/suggest.php?term=";
+
+        fetch(path + encodeURIComponent(val) + "&field=department")
+            .then(res => res.json())
+            .then(data => {
+                suggestBox.innerHTML = "";
+
+                if (!Array.isArray(data) || data.length === 0) return;
+
+                data.forEach(text => {
+                    const div = document.createElement("div");
+                    div.className = "suggestion-item";
+
+                    const regex = new RegExp(`(${val})`, "gi");
+                    div.innerHTML = text.replace(regex, "<strong>$1</strong>");
+
+                    div.addEventListener("click", () => {
+                        deptInput.value = text;
+                        suggestBox.innerHTML = "";
+                        deptInput.form.submit();
+                    });
+
+                    suggestBox.appendChild(div);
+                });
+            })
+            .catch(err => console.error("Department suggestion error:", err));
+    });
+
+    document.addEventListener("click", e => {
+        if (!suggestBox.contains(e.target) && e.target !== deptInput) {
+            suggestBox.innerHTML = "";
+        }
+    });
+})();
+
+/* ============================================================
    FILE: edit.php
    FUNCTION: Unsaved Changes & Unchanged Update Warning
    ============================================================ */
@@ -206,6 +262,25 @@
         });
     });
 
+/* ============================================================
+   FILE: paperdetails.php
+   FUNCTION: Copy APA and MLA Citation
+   ============================================================ */
+    (function () {
+          function copyFrom(id) {
+            var el = document.getElementById(id);
+            if (!el) return;
+            el.focus();
+            el.select();
+            try { document.execCommand("copy"); } catch (e) {}
+          }
+
+          var a = document.getElementById("copyApa");
+          var m = document.getElementById("copyMla");
+
+          if (a) a.addEventListener("click", function () { copyFrom("apaText"); });
+          if (m) m.addEventListener("click", function () { copyFrom("mlaText"); });
+    })();
 
 /* ============================================================
    FILE: add.php
@@ -242,24 +317,3 @@
         wrap.appendChild(makeRow(""));
       });
 })();
-
-/* ============================================================
-   FILE: paperdetails.php
-   FUNCTION: Copy APA and MLA Citation
-   ============================================================ */
-    (function () {
-          function copyFrom(id) {
-            var el = document.getElementById(id);
-            if (!el) return;
-            el.focus();
-            el.select();
-            try { document.execCommand("copy"); } catch (e) {}
-          }
-
-          var a = document.getElementById("copyApa");
-          var m = document.getElementById("copyMla");
-
-          if (a) a.addEventListener("click", function () { copyFrom("apaText"); });
-          if (m) m.addEventListener("click", function () { copyFrom("mlaText"); });
-    })();
-
