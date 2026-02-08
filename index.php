@@ -8,7 +8,7 @@ session_start(); // Added to detect active sessions
 <head>
   <meta charset="utf-8">
   <title>Research Paper Directory</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=1">
 </head>
 <body>
   <div class="navbar topNav">
@@ -17,7 +17,7 @@ session_start(); // Added to detect active sessions
     </div>
     <div class="rightNav">
       <?php if (isset($_SESSION["admin_logged_in"]) && $_SESSION["admin_logged_in"] === true): ?>
-          <a class="btn btn-admin" href="includes/admin.php">Back to Dashboard</a>
+          <a class="btn btn-admin" href="includes/adminindex.php">Back to Dashboard</a>
       <?php else: ?>
           <a class="btn btn-admin" href="includes/admin.php">Admin Login</a>
       <?php endif; ?>
@@ -293,6 +293,6 @@ session_start(); // Added to detect active sessions
 
     </div>
   </div>
-    <script src="/Research-Paper-Directory-main/includes/script.js"></script>
+    <script src="js/script.js"></script>
 </body>
 </html>

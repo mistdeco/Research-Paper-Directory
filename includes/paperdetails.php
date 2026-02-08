@@ -90,7 +90,7 @@ if ($row) {
         <?php if (!$row) { ?>
           <div class="empty">Paper not found.</div>
           <div class="do">
-            <a class="btn" href="/Research-Paper-Directory-main/index.php">Back</a>
+            <a class="btn" href="/index.php">Back</a>
           </div>
         <?php } else { ?>
           <article class="paperDetails">
@@ -146,7 +146,7 @@ if ($row) {
             </div>
 
             <div class="do">
-              <a class="btn" href="/Research-Paper-Directory-main/index.php">Back</a>
+              <a class="btn" href="/index.php">Back</a>
             </div>
           </article>
         <?php } ?>
@@ -155,6 +155,6 @@ if ($row) {
     </div>
   </div>
 
-  <script src="script.js"></script>
+  <script src="../js/script.js"></script>
 </body>
 </html>

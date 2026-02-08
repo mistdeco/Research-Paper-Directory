@@ -69,7 +69,7 @@ $result = mysqli_query($conn, $sql);
 <head>
     <meta charset="utf-8">
     <title>Admin Dashboard - Research Paper Directory</title>
-    <link rel="stylesheet" href="../css/Adminstyle.css">
+    <link rel="stylesheet" href="../css/AdminStyle.css?v=1">
 </head>
 <body>
     <nav class="navbar topNav">
@@ -167,6 +167,6 @@ $result = mysqli_query($conn, $sql);
             </section>
         </div>
     </div>
-    <script src="script.js"></script>
+    <script src="../js/script.js"></script>
 </body>
 </html>

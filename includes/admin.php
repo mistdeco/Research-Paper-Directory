@@ -2,15 +2,10 @@
 include "config.php";
 session_start();
 
-if (isset($_SESSION["admin_logged_in"]) && $_SESSION["admin_logged_in"] === true && !isset($_GET["logout"])) {
-    header("Location: adminindex.php");
-    exit;
-}
-
 if (isset($_GET["logout"])) {
   $_SESSION = [];
   session_destroy();
-  header("Location: ../index.php");
+  header("Location: /index.php");
   exit;
 }
 
@@ -79,7 +74,7 @@ function chars($v) {
 
         <div class="formRow actions">
           <button class="btn btn-primary" type="submit">Login</button>
-          <a class="btn" href="../index.php">Cancel</a>
+          <a class="btn" href="/index.php">Cancel</a>
         </div>
       </form>
     </div>
