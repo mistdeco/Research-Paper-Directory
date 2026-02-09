@@ -69,10 +69,24 @@ session_start();
                 LEFT JOIN authors a ON a.id = pa.authorId";
 
       if ($query !== "") {
-        $qEsc = mysqli_real_escape_string($conn, $query);
-        $like = "'%" . $qEsc . "%'";
-        $where[] = "(p.title LIKE $like OR p.keywords LIKE $like OR a.fName LIKE $like OR a.lName LIKE $like)";
-      }
+    $qEsc = mysqli_real_escape_string($conn, $query);
+    $like = "'%" . $qEsc . "%'";
+    
+    // Improved subquery to handle full names (First Middle Last)
+    $subquery = "SELECT DISTINCT p2.id 
+                 FROM papers p2 
+                 LEFT JOIN paper_authors pa2 ON pa2.paperId = p2.id 
+                 LEFT JOIN authors a2 ON a2.id = pa2.authorId 
+                 WHERE p2.title LIKE $like 
+                    OR p2.keywords LIKE $like 
+                    OR a2.fName LIKE $like 
+                    OR a2.lName LIKE $like 
+                    OR CONCAT(a2.fName, ' ', a2.lName) LIKE $like
+                    OR CONCAT(a2.fName, ' ', a2.MI, ' ', a2.lName) LIKE $like
+                    OR CONCAT(a2.fName, ' ', a2.MI, '. ', a2.lName) LIKE $like";
+
+    $where[] = "p.id IN ($subquery)";
+}
 
       if ($year !== "") {
         $yearInt = (int)$year;

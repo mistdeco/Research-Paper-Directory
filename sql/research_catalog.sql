@@ -26,27 +26,35 @@ CREATE TABLE `authors` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `authors` (`id`, `fName`, `MI`, `lName`) VALUES
-(31, 'Egyptian', NULL, 'Mau'),
-(1, 'Ei', NULL, 'Makoto'),
-(10, 'Ei', NULL, 'Makoto'),
-(11, 'Ei', NULL, 'Makoto'),
-(30, 'Ei', NULL, 'Makoto'),
-(34, 'Ei', NULL, 'Makoto'),
-(36, 'Ei', NULL, 'Makoto'),
-(12, 'ER', NULL, 'F'),
-(35, 'Ewi', 'K', 'Nine'),
-(13, 'EWRG', NULL, 'ERGF'),
-(15, 'FIRST', 'M', 'LAST'),
+(94, ' ', NULL, 'Bulalayao'),
+(90, ' ', NULL, 'Colis'),
+(91, ' ', NULL, 'Fiedalan'),
+(98, ' ', NULL, 'Freyden'),
+(95, ' ', NULL, 'Hya'),
+(101, ' ', NULL, 'Maica'),
+(92, ' ', NULL, 'Mendoza'),
+(93, ' ', NULL, 'Rabago'),
+(104, ' ', NULL, 'Raia'),
+(99, ' ', NULL, 'Rain'),
+(100, ' ', NULL, 'Raina'),
+(86, ' ', NULL, 'Reena'),
+(97, ' ', NULL, 'Remy'),
+(96, ' ', NULL, 'Rodney'),
+(56, 'Ei', NULL, 'Makoto'),
+(89, 'Eric', 'C', 'Cartman'),
+(54, 'Frane', 'T', 'Roman'),
 (3, 'Frane', 'T', 'Romanova'),
+(47, 'Frauke', 'B', 'Payton'),
+(88, 'Kyle', 'V', 'Brovloski'),
+(105, 'Lana', 'D', 'Rey'),
 (2, 'Lemuel', 'I', 'Koppel'),
-(4, 'Maurice', 'Ä', 'AdomaitienÄ—'),
-(20, 'New', NULL, 'Author'),
-(28, 'New', NULL, 'author'),
-(14, 'Q', 'R', 'WEWR'),
+(61, 'Prof', NULL, 'oak'),
+(62, 'Prof', 'A', 'Ketchum'),
+(87, 'Randy', 'M', 'Marsh'),
 (5, 'Rheinallt', NULL, 'Sasaki'),
-(7, 'Rheinallt', NULL, 'Sasaki'),
-(18, 'Sample', 'E', 'Author'),
-(32, 'Si', NULL, 'maica');
+(106, 'Rhya', NULL, 'Copy'),
+(64, 'Soraya', 'V', 'Kelly'),
+(103, 'William', 'B', 'Afton');
 
 CREATE TABLE `departments` (
   `id` bigint(15) UNSIGNED NOT NULL,
@@ -55,17 +63,15 @@ CREATE TABLE `departments` (
 
 INSERT INTO `departments` (`id`, `department`) VALUES
 (1, 'Computer Science'),
-(20, 'Cooking'),
-(22, 'Culture'),
+(51, 'Engineering'),
 (2, 'Environmental Science'),
-(25, 'Food Department'),
 (3, 'Information Technology'),
 (4, 'Information Techonology'),
 (39, 'IT247'),
-(24, 'Social Sciences'),
-(35, 'Technology'),
-(14, 'Test Department'),
-(40, 'yelo');
+(62, 'Pokemans'),
+(96, 'Psychology'),
+(83, 'Science'),
+(49, 'Zoology');
 
 CREATE TABLE `papers` (
   `id` bigint(15) UNSIGNED NOT NULL,
@@ -79,19 +85,17 @@ CREATE TABLE `papers` (
 
 INSERT INTO `papers` (`id`, `title`, `keywords`, `departmentId`, `yearPublished`, `createdAt`, `abstract`) VALUES
 (1, 'Keyword Extraction for Research Abstracts', 'machine learning, AI, LLM', 1, 2020, '2026-02-03 04:51:24', 'wwwwww'),
-(2, 'd', 'sd', 1, 2003, '2026-02-03 18:59:50', 'dwqfsd'),
 (3, 'Flood Detection and Notifier', 'Arduino, Android Studio, Firebase', 4, 2026, '2026-02-03 19:01:26', '............'),
 (4, 'Coals from Hyacinth', 'upcycling, greenhouse gases', 2, 2018, '2026-02-03 19:05:52', 'yada yada'),
 (5, 'The Effects of Antioxidants in Mice', 'biology, animal studies, antioxidants', 1, 1999, '2026-02-03 19:08:24', 'q'),
 (6, 'Integrating Brain Activity Monitors with Wearable Technology to Monitor Stress Level', 'neuroscience, wearables, cortisol', 3, 2028, '2026-02-03 19:12:50', 'qwertyuiopoiuytrewertyukuytr'),
-(9, 'Food', 'Food', 20, 1900, '2026-02-07 21:49:35', 'Cook'),
-(10, 'aaa', 'sd', 22, 2003, '2026-02-07 21:50:42', 'a'),
-(11, 'A', 'culture, humms,', 24, 2020, '2026-02-08 03:15:57', 'a'),
-(12, '1', 'Arduino, Android Studio, Firebase', 25, 2008, '2026-02-08 04:25:01', 'ww'),
-(13, 'Utilizing blah blah blah', 'a', 1, 1967, '2026-02-08 04:36:00', 'q'),
-(14, '.....', 'Artificial Intelligence', 35, 2006, '2026-02-08 04:37:46', 'Wjisndjdiiw'),
-(15, 'Hanlooo sana Quatro', 'hewow', 39, 2005, '2026-02-08 04:45:00', 'hehehehee'),
-(16, 'hello pooo', 'woo', 40, 2007, '2026-02-08 04:48:11', 'HAHAHAHAH');
+(22, 'Life of Yuan', 'furry', 49, 2024, '2026-02-08 05:33:39', 'meowmeowwoofwoofbaarkbark'),
+(24, 'Fluid Gears', 'biology, animal studies, antioxidants', 51, 1800, '2026-02-08 05:50:54', 'q'),
+(27, 'How Friendship Affects Pokemon Evolution', 'pokeball, pokemon, poke centers, gym badges, levels, friendship', 62, 1992, '2026-02-08 08:12:43', 'Gotta catchem all'),
+(31, 'Clean Energy', 'environment, windmills', 2, 1799, '2026-02-08 08:37:56', 'aaa'),
+(34, 'ACTUAL BOOK??', 'southpark', 83, 1992, '2026-02-08 09:58:13', 'South park'),
+(35, 'ShelfStudy: Digital Catalog for Student Research Papers', 'Shelfstudy', 39, 2026, '2026-02-08 09:59:04', 'EYYYYY'),
+(38, 'Night Owl & Lock In: A Correlational Study Between Motivation and Sleep', 'sleep', 96, 2026, '2026-02-08 12:43:09', 'na oc sa mga smol errors');
 
 CREATE TABLE `paper_authors` (
   `paperId` bigint(15) UNSIGNED NOT NULL,
@@ -100,21 +104,34 @@ CREATE TABLE `paper_authors` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 INSERT INTO `paper_authors` (`paperId`, `authorId`, `authorOrder`) VALUES
-(2, 11, 1),
-(3, 12, 1),
-(3, 13, 2),
-(4, 4, 1),
-(4, 7, 2),
+(1, 96, 1),
+(1, 97, 2),
+(3, 86, 2),
+(3, 99, 1),
+(3, 100, 3),
+(3, 101, 4),
+(4, 5, 2),
+(4, 95, 1),
 (5, 3, 1),
 (6, 2, 1),
-(9, 18, 1),
-(10, 15, 1),
-(11, 15, 1),
-(11, 20, 2),
-(12, 4, 1),
-(13, 35, 2),
-(13, 36, 1),
-(14, 32, 1);
+(22, 94, 1),
+(22, 98, 2),
+(24, 47, 2),
+(24, 54, 1),
+(24, 56, 3),
+(27, 61, 1),
+(27, 62, 2),
+(31, 64, 1),
+(34, 87, 1),
+(34, 88, 2),
+(34, 89, 3),
+(35, 90, 1),
+(35, 91, 2),
+(35, 92, 3),
+(35, 93, 4),
+(35, 94, 5),
+(38, 105, 1),
+(38, 106, 2);
 
 
 ALTER TABLE `admins`
@@ -144,13 +161,13 @@ ALTER TABLE `admins`
   MODIFY `id` bigint(15) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 ALTER TABLE `authors`
-  MODIFY `id` bigint(15) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
+  MODIFY `id` bigint(15) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=107;
 
 ALTER TABLE `departments`
-  MODIFY `id` bigint(15) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=41;
+  MODIFY `id` bigint(15) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=98;
 
 ALTER TABLE `papers`
-  MODIFY `id` bigint(15) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
+  MODIFY `id` bigint(15) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=39;
 
 
 ALTER TABLE `papers`

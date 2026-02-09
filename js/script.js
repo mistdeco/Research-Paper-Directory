@@ -1,5 +1,5 @@
 /* ============================================================
-   FILE: add.php & edit.php kkk
+   FILE: add.php & edit.php
    FUNCTION: Author inputs (no reset on count change)
    ============================================================ */
 (function () {
@@ -226,32 +226,43 @@
    FILE: edit.php
    FUNCTION: Unsaved Changes & Unchanged Update Warning
    ============================================================ */
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.getElementById('editForm');
-        const backBtn = document.getElementById('backBtn');
-        
-        const getFormString = () => new URLSearchParams(new FormData(form)).toString();
-        const initialState = getFormString();
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('editForm');
+    const backBtn = document.getElementById('backBtn');
 
-        form.addEventListener('submit', function(event) {
-            const currentState = getFormString();
-            
-            if (initialState === currentState) {
-                event.preventDefault();
-                alert("No changes detected.");
-            }
-        });
+    // 🔒 Guard: stop if form is missing
+    if (!form) return;
 
-        backBtn.addEventListener('click', function(event) {
+    const getFormString = () =>
+        new URLSearchParams(new FormData(form)).toString();
+
+    const initialState = getFormString();
+
+    form.addEventListener('submit', function (event) {
+        const currentState = getFormString();
+
+        if (initialState === currentState) {
+            event.preventDefault();
+            alert("No changes detected.");
+        }
+    });
+
+    if (backBtn) {
+        backBtn.addEventListener('click', function (event) {
             const currentState = getFormString();
+
             if (initialState !== currentState) {
-                const confirmLeave = confirm("You have unsaved changes. Are you sure you want to go back?");
+                const confirmLeave = confirm(
+                    "You have unsaved changes. Are you sure you want to go back?"
+                );
                 if (!confirmLeave) {
                     event.preventDefault();
                 }
             }
         });
-    });
+    }
+});
+
 
 /* ============================================================
    FILE: paperdetails.php

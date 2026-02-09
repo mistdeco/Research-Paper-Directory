@@ -8,25 +8,24 @@ if (!isset($_SESSION["admin_logged_in"]) || $_SESSION["admin_logged_in"] !== tru
 }
 
 function parseAuthorName($name) {
-  $name = trim(preg_replace('/\s+/', ' ', (string)$name));
-  if ($name === "") return ["", null, ""];
+    $name = trim(preg_replace('/\s+/', ' ', (string)$name));
+    if ($name === "") return ["---", null, "---"]; // Placeholder to prevent skip
 
-  $parts = preg_split('/\s+/', $name);
-  $fName = $parts[0] ?? "";
-  $lName = "";
-  $MI = null;
-
-  if (count($parts) === 1) {
-    $lName = "";
-  } else if (count($parts) === 2) {
-    $lName = $parts[1];
-  } else {
-    $mid = $parts[1];
-    $MI = strtoupper(mb_substr($mid, 0, 1));
+    $parts = preg_split('/\s+/', $name);
+    
+    if (count($parts) === 1) {
+        return [" ", null, $parts[0]]; // Treat single name as Last Name
+    } 
+    
+    $fName = $parts[0];
+    if (count($parts) === 2) {
+        return [$fName, null, $parts[1]];
+    }
+    
+    // For 3+ parts: First, MI, and the rest is Last Name
+    $MI = strtoupper(mb_substr($parts[1], 0, 1));
     $lName = implode(' ', array_slice($parts, 2));
-  }
-
-  return [$fName, $MI, $lName];
+    return [$fName, $MI, $lName];
 }
 
 if (isset($_POST['save'])) {
@@ -64,40 +63,47 @@ if (isset($_POST['save'])) {
   $paperId = (int)mysqli_insert_id($conn);
 
   $seenAuthorIds = [];
-  $order = 1;
+$order = 1;
 
-  foreach ($authorsArr as $authorRaw) {
+foreach ($authorsArr as $authorRaw) {
     list($fName, $MI, $lName) = parseAuthorName($authorRaw);
-    $fName = trim((string)$fName);
-    $lName = trim((string)$lName);
-    if ($fName === "" || $lName === "") continue;
 
     $fEsc = mysqli_real_escape_string($conn, $fName);
     $lEsc = mysqli_real_escape_string($conn, $lName);
+    $miEsc = ($MI !== null) ? "'" . mysqli_real_escape_string($conn, $MI) . "'" : "NULL";
 
-    $miSql = "NULL";
-    if ($MI !== null && trim((string)$MI) !== "") {
-      $miSql = "'" . mysqli_real_escape_string($conn, $MI) . "'";
+    // Find existing author
+    $check = mysqli_query(
+        $conn,
+        "SELECT id FROM authors
+         WHERE fName='$fEsc'
+           AND lName='$lEsc'
+           AND (MI <=> $miEsc)
+         LIMIT 1"
+    );
+
+    if ($check && mysqli_num_rows($check) > 0) {
+        $authorId = mysqli_fetch_assoc($check)['id'];
+    } else {
+        mysqli_query(
+            $conn,
+            "INSERT INTO authors (fName, MI, lName)
+             VALUES ('$fEsc', $miEsc, '$lEsc')"
+        );
+        $authorId = mysqli_insert_id($conn);
     }
 
-    mysqli_query(
-      $conn,
-      "INSERT INTO authors (fName, MI, lName)
-       VALUES ('$fEsc', $miSql, '$lEsc')
-       ON DUPLICATE KEY UPDATE id = LAST_INSERT_ID(id)"
-    );
-    $authorId = (int)mysqli_insert_id($conn);
+    if (!$authorId || isset($seenAuthorIds[$authorId])) continue;
 
-    if ($authorId < 1 || isset($seenAuthorIds[$authorId])) continue;
     $seenAuthorIds[$authorId] = true;
 
     mysqli_query(
-      $conn,
-      "INSERT INTO paper_authors (paperId, authorId, authorOrder)
-       VALUES ($paperId, $authorId, $order)"
+        $conn,
+        "INSERT INTO paper_authors (paperId, authorId, authorOrder)
+         VALUES ($paperId, $authorId, $order)"
     );
     $order++;
-  }
+}
 
   mysqli_query($conn, "COMMIT");
 
@@ -140,14 +146,14 @@ if (isset($_POST['save'])) {
           </div>
 
           <div class="field">
-            <div class="label">Authors</div>
-            <div id="authorsWrap">
-              <div class="authorRow">
-                <input class="input" type="text" name="authors[]" required>
-              </div>
-            </div>
-            <small>Use the format: Firstname Middlename/MI Lastname</small>
-          </div>
+  <div class="label">Authors</div>
+  <div id="authorsWrap">
+    <div class="authorRow">
+      <input class="input" type="text" name="authors[]" placeholder="Author 1" required>
+    </div>
+  </div>
+  <small>Use the format: Firstname Middlename/MI Lastname</small>
+</div>
 
           <div class="field">
             <div class="label">Keywords</div>

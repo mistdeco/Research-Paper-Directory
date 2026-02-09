@@ -37,7 +37,22 @@ $joins = " FROM papers p
 
 if ($query !== "") {
     $qEsc = mysqli_real_escape_string($conn, $query);
-    $where[] = "(p.title LIKE '%$qEsc%' OR p.keywords LIKE '%$qEsc%' OR a.fName LIKE '%$qEsc%' OR a.lName LIKE '%$qEsc%')";
+    $like = "'%" . $qEsc . "%'";
+    
+    // Improved subquery to handle full names (First Middle Last)
+    $subquery = "SELECT DISTINCT p2.id 
+                 FROM papers p2 
+                 LEFT JOIN paper_authors pa2 ON pa2.paperId = p2.id 
+                 LEFT JOIN authors a2 ON a2.id = pa2.authorId 
+                 WHERE p2.title LIKE $like 
+                    OR p2.keywords LIKE $like 
+                    OR a2.fName LIKE $like 
+                    OR a2.lName LIKE $like 
+                    OR CONCAT(a2.fName, ' ', a2.lName) LIKE $like
+                    OR CONCAT(a2.fName, ' ', a2.MI, ' ', a2.lName) LIKE $like
+                    OR CONCAT(a2.fName, ' ', a2.MI, '. ', a2.lName) LIKE $like";
+
+    $where[] = "p.id IN ($subquery)";
 }
 if ($year !== "" && ctype_digit($year)) {
     $where[] = "p.yearPublished = " . (int)$year;
@@ -95,7 +110,7 @@ $result = mysqli_query($conn, $sql);
         <div class="rightNav">
             <span class="adminName">Admin: <?= chars($_SESSION["admin_username"] ?? "admin") ?></span>
             <a class="navLink" href="../index.php">Public View</a>
-            <a class="navBtn logout" href="admin.php?logout=1">Logout</a>
+            <a class="navBtn logout" href="admin.php">Logout</a>
         </div>
     </nav>
 
