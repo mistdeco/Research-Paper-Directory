@@ -105,7 +105,7 @@ $result = mysqli_query($conn, $sql);
 <body>
     <nav class="navbar topNav">
         <div class="leftNav">
-            <span class="navLogo">Research Paper Directory</span>
+            <span class="navLogo">ShelfStudy</span>
         </div>
         <div class="rightNav">
             <span class="adminName">Admin: <?= chars($_SESSION["admin_username"] ?? "admin") ?></span>
