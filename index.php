@@ -13,7 +13,7 @@ session_start();
 <body>
   <div class="navbar topNav">
     <div class="leftNav">
-      <span class="title">Research Paper Directory</span>
+      <span class="title">ShelfStudy</span>
     </div>
     <div class="rightNav">
       <?php if (isset($_SESSION["admin_logged_in"]) && $_SESSION["admin_logged_in"] === true): ?>
@@ -306,3 +306,4 @@ session_start();
     <script src="js/script.js"></script>
 </body>
 </html>
+
