@@ -2,11 +2,19 @@
 include "config.php";
 session_start();
 
+// FIX: Handle Logout FIRST
 if (isset($_GET["logout"])) {
   $_SESSION = [];
   session_destroy();
-  header("Location: /index.php");
+  // Use ../ to go back to the root folder
+  header("Location: ../index.php");
   exit;
+}
+
+// FIX: If already logged in, skip the login screen
+if (isset($_SESSION["admin_logged_in"]) && $_SESSION["admin_logged_in"] === true) {
+    header("Location: adminindex.php");
+    exit;
 }
 
 $error = "";
@@ -74,7 +82,7 @@ function chars($v) {
 
         <div class="formRow actions">
           <button class="btn btn-primary" type="submit">Login</button>
-          <a class="btn" href="/index.php">Cancel</a>
+          <a class="btn" href="../index.php">Cancel</a>
         </div>
       </form>
     </div>

@@ -39,7 +39,6 @@ if ($query !== "") {
     $qEsc = mysqli_real_escape_string($conn, $query);
     $like = "'%" . $qEsc . "%'";
     
-    // Improved subquery to handle full names (First Middle Last)
     $subquery = "SELECT DISTINCT p2.id 
                  FROM papers p2 
                  LEFT JOIN paper_authors pa2 ON pa2.paperId = p2.id 
@@ -110,7 +109,7 @@ $result = mysqli_query($conn, $sql);
         <div class="rightNav">
             <span class="adminName">Admin: <?= chars($_SESSION["admin_username"] ?? "admin") ?></span>
             <a class="navLink" href="../index.php">Public View</a>
-            <a class="navBtn logout" href="admin.php">Logout</a>
+            <a class="navBtn logout" href="admin.php?logout=1">Logout</a>
         </div>
     </nav>
 
