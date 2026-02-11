@@ -1,6 +1,7 @@
-# Research-Paper-Directory
-finals project
+# ShelfStudy: A Digital BIbiliographic Catalog for Student Research Papers
 
-1. Import the .sql file into your localhost before trying to run
-2. Will fix /sql, /css, /js, and /includes folders later
-3. js and css nalang kulang
+_WEBPROG Finals Project_
+
+___
+
+This repository contains the same exact files as the one deployed on InfinityFree except for the configuration file, `config.php`.
